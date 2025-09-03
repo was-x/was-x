@@ -1,0 +1,24 @@
+name: SSH Debug with Localhost.run
+
+on:
+  workflow_dispatch:   # run manually from the Actions tab
+
+jobs:
+  ssh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH server
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-server
+          sudo mkdir -p /var/run/sshd
+          echo 'root:rootpass' | sudo chpasswd
+          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo service ssh start
+
+      - name: Expose SSH with localhost.run
+        run: |
+          echo "Starting tunnel..."
+          ssh -o StrictHostKeyChecking=no -R 2222:localhost:22 ssh.localhost.run
